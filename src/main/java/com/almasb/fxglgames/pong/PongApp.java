@@ -213,7 +213,9 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
     @Override
     protected void onUpdate(double tpf) {
         if (!server.getConnections().isEmpty()) {
-            var message = "GAME_DATA," + player1.getY() + "," + player2.getY() + "," + ball.getX() + "," + ball.getY();
+            var message = "GAME_DATA," + player1.getY() + "," + player1.getX() + "," +
+                    player2.getY() + "," + player2.getX() + "," +
+                    ball.getX() + "," + ball.getY(); // 6 arguments
 
             server.broadcast(message);
         }
