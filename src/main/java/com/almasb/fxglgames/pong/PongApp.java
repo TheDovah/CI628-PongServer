@@ -144,6 +144,7 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
         server.setOnConnected(connection -> {
             connection.addMessageHandlerFX(this);
+            // Put the connection stuff here
         });
 
         getGameWorld().addEntityFactory(new PongFactory());
@@ -228,6 +229,7 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
             server.broadcast(message);
         }
+        if(server.getConnections().isEmpty()){ i = 0; }
     }
 
     private void initScreenBounds() {
