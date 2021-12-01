@@ -144,7 +144,13 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
         server.setOnConnected(connection -> {
             connection.addMessageHandlerFX(this);
-            // Put the connection stuff here
+            if (!server.getConnections().isEmpty()) {
+                var message = "GAME_DATA," + player1.getY() + "," + player1.getX() + "," +
+                        player2.getY() + "," + player2.getX() + "," +
+                        ball.getX() + "," + ball.getY(); // 6 arguments
+
+                server.broadcast(message);
+            }
         });
 
         getGameWorld().addEntityFactory(new PongFactory());
@@ -211,25 +217,23 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
         getGameScene().addUI(ui);
     }
 
-    int i = 0;
     @Override
     protected void onUpdate(double tpf) {
-        if (!server.getConnections().isEmpty() && i == 0) {
+        /*if (!server.getConnections().isEmpty() && i == 0) {
             var message = "GAME_DATA," + player1.getY() + "," + player1.getX() + "," +
                     player2.getY() + "," + player2.getX() + "," +
                     ball.getX() + "," + ball.getY(); // 6 arguments
 
             server.broadcast(message);
             i++;
-        }
-        else if (!server.getConnections().isEmpty() && i != 0) {
+        }*/
+        if (!server.getConnections().isEmpty()) {
             var message = "GAME_DATA,"
                     + player1.getY() + "," + player2.getY() + "," +
                     ball.getX() + "," + ball.getY(); // 4 arguments
 
             server.broadcast(message);
         }
-        if(server.getConnections().isEmpty()){ i = 0; }
     }
 
     private void initScreenBounds() {
