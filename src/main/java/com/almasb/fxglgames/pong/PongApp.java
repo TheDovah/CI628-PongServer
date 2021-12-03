@@ -150,7 +150,13 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
                         ball.getX() + "," + ball.getY(); // 6 arguments
 
                 server.broadcast(message);
+                i++;
             }*/
+        });
+
+        server.setOnDisconnected(connection -> {
+            i = 0;
+            System.out.println("Something Anything *cough*");
         });
 
         getGameWorld().addEntityFactory(new PongFactory());
@@ -271,7 +277,11 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
         var tokens = message.split(",");
 
         Arrays.stream(tokens).skip(1).forEach(key -> {
-            if (key.endsWith("_DOWN")) {
+            if (key.equals("exit")) {
+                System.out.println("You have exited with: " + connection);
+                connection.terminate();
+                System.out.println("Connections: " + server.getConnections());
+            } else if (key.endsWith("_DOWN")) {
                 getInput().mockKeyPress(KeyCode.valueOf(key.substring(0, 1)));
             } else if (key.endsWith("_UP")) {
                 getInput().mockKeyRelease(KeyCode.valueOf(key.substring(0, 1)));
@@ -328,10 +338,18 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
             t.setDaemon(true);
             t.start();
         }
+        boolean isExit = false;
 
         @Override
         public String read() throws Exception {
-            return messages.take();
+            String result = "";
+            if(!isExit) {
+                result = messages.take();
+            }
+            if (result.equals("exit")) {
+                isExit = true;
+            }
+            return result;
         }
     }
 
