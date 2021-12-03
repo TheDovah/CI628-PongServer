@@ -343,12 +343,14 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
         @Override
         public String read() throws Exception {
             String result = "";
+            System.out.println("message: " + messages.take());
             if(!isExit) {
                 result = messages.take();
             }
-            if (result.equals("exit")) {
+            if (result.contains("exit")) {
                 isExit = true;
             }
+            System.out.println("result " + result);
             return result;
         }
     }
