@@ -317,8 +317,10 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
                         while ((len = in.read(buf)) > 0) {
                             var message = new String(Arrays.copyOf(buf, len));
 
-                            if (message.equals("exit")) {
+                            if (message.contains("exit")) {
+                                System.out.println("Closing in...");;
                                 in.close();
+                                return;
                             } else {
                                 System.out.println("Recv message: " + message);
 
@@ -338,7 +340,10 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
         @Override
         public String read() throws Exception {
-            String result = "";
+
+            return messages.take();
+
+            /*String result = "";
             System.out.println("message: " + messages.take());
             if(!isExit) {
                 result = messages.take();
@@ -347,7 +352,7 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
                 isExit = true;
             }
             System.out.println("result " + result);
-            return result;
+            return result;*/
         }
     }
 
