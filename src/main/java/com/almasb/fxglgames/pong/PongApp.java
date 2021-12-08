@@ -144,14 +144,14 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
         server.setOnConnected(connection -> {
             connection.addMessageHandlerFX(this);
-            /*if (!server.getConnections().isEmpty()) {
+            if (!server.getConnections().isEmpty() && i == 0) {
                 var message = "GAME_DATA," + player1.getY() + "," + player1.getX() + "," +
                         player2.getY() + "," + player2.getX() + "," +
                         ball.getX() + "," + ball.getY(); // 6 arguments
 
                 server.broadcast(message);
                 i++;
-            }*/
+            }
         });
 
         server.setOnDisconnected(connection -> {
@@ -226,15 +226,7 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
     int i = 0;
     @Override
     protected void onUpdate(double tpf) {
-        if (!server.getConnections().isEmpty() && i == 0) {
-            var message = "GAME_DATA," + player1.getY() + "," + player1.getX() + "," +
-                    player2.getY() + "," + player2.getX() + "," +
-                    ball.getX() + "," + ball.getY(); // 6 arguments
-
-            server.broadcast(message);
-            i++;
-        }
-        else if (!server.getConnections().isEmpty() && i != 0) {
+        if (!server.getConnections().isEmpty() && i != 0) {
             var message = "GAME_DATA,"
                     + player1.getY() + "," + player2.getY() + "," +
                     ball.getX() + "," + ball.getY(); // 4 arguments
@@ -279,6 +271,8 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
         Arrays.stream(tokens).skip(1).forEach(key -> {
             if (key.equals("exit")) {
                 System.out.println("You have exited with: " + connection);
+                connection.send("exit");
+                i = 0;
                 connection.terminate();
                 System.out.println("Connections: " + server.getConnections());
             } else if (key.endsWith("_DOWN")) {
@@ -317,18 +311,20 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
             var t = new Thread(() -> {
                 try {
+                        char[] buf = new char[36];
 
-                    char[] buf = new char[36];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            var message = new String(Arrays.copyOf(buf, len));
 
-                    int len;
+                            if (message.equals("exit")) {
+                                in.close();
+                            } else {
+                                System.out.println("Recv message: " + message);
 
-                    while ((len = in.read(buf)) > 0) {
-                        var message = new String(Arrays.copyOf(buf, len));
-
-                        System.out.println("Recv message: " + message);
-
-                        messages.put(message);
-                    }
+                                messages.put(message);
+                            }
+                        }
 
                 } catch (Exception e) {
                     e.printStackTrace();
