@@ -144,14 +144,7 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
         server.setOnConnected(connection -> {
             connection.addMessageHandlerFX(this);
-            if (!server.getConnections().isEmpty() && i == 0) {
-                var message = "GAME_DATA," + player1.getY() + "," + player1.getX() + "," +
-                        player2.getY() + "," + player2.getX() + "," +
-                        ball.getX() + "," + ball.getY(); // 6 arguments
-                System.out.println("Sending 6 args");
-                server.broadcast(message);
-                i++;
-            }
+            i = 0;
         });
 
         getGameWorld().addEntityFactory(new PongFactory());
@@ -221,10 +214,20 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
     static int i = 0;
     @Override
     protected void onUpdate(double tpf) {
+
+        if(!server.getConnections().isEmpty() && i == 0) {
+            var message = "GAME_DATA," + player1.getY() + "," + player1.getX() + "," +
+                    player2.getY() + "," + player2.getX() + "," +
+                    ball.getX() + "," + ball.getY(); // 6 arguments
+            System.out.println("Sending 6 args");
+            server.broadcast(message);
+            i++;
+        }
+
         if (!server.getConnections().isEmpty() && i != 0) {
             var message = "GAME_DATA,"
                     + player1.getY() + "," + player2.getY() + "," +
-                    ball.getX() + "," + ball.getY() + "," + geti("player1score"); // 4 arguments
+                    ball.getX() + "," + ball.getY(); // 4 arguments
             server.broadcast(message);
         }
     }
@@ -262,16 +265,18 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
     public void onReceive(Connection<String> connection, String message) {
         var tokens = message.split(",");
 
+
         Arrays.stream(tokens).skip(1).forEach(key -> {
-            if (key.equals("exit")) {
+            System.out.println("key: " + key);
+            if (key.endsWith("_DOWN")) {
+                getInput().mockKeyPress(KeyCode.valueOf(key.substring(0, 1)));
+            } else if (key.endsWith("_UP")) {
+                getInput().mockKeyRelease(KeyCode.valueOf(key.substring(0, 1)));
+            } else if (key.equals("exit")) {
                 System.out.println("You have exited with: " + connection);
                 connection.send("exit");
                 connection.terminate();
                 System.out.println("Connections: " + server.getConnections());
-            } else if (key.endsWith("_DOWN")) {
-                getInput().mockKeyPress(KeyCode.valueOf(key.substring(0, 1)));
-            } else if (key.endsWith("_UP")) {
-                getInput().mockKeyRelease(KeyCode.valueOf(key.substring(0, 1)));
             }
         });
     }
@@ -312,7 +317,6 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
                             if (message.contains("exit")) {
                                 System.out.println("Closing in...");
-                                i = 0;
                                 in.close();
                                 return;
                             } else {
@@ -334,16 +338,19 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
 
         @Override
         public String read() throws Exception {
+            return messages.take();
+
+            /*
             String result = "";
-            System.out.println("message: " + messages.take());
             if(!isExit) {
                 result = messages.take();
             }
             if (result.contains("exit")) {
                 isExit = true;
             }
-            System.out.println("result " + result);
             return result;
+
+             */
         }
     }
 
