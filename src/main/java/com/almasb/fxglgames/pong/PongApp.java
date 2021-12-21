@@ -145,6 +145,8 @@ public class PongApp extends GameApplication implements MessageHandler<String> {
         server.setOnConnected(connection -> {
             connection.addMessageHandlerFX(this);
             i = 0;
+
+            server.broadcast("SCORES," + geti("player1score") + "," + geti("player2score"));
         });
 
         getGameWorld().addEntityFactory(new PongFactory());
